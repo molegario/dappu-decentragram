@@ -1,3 +1,7 @@
+/* eslint-disable no-undef */
+
+const { assert } = require('chai')
+
 const Decentragram = artifacts.require('./Decentragram.sol')
 
 require('chai')
@@ -27,6 +31,8 @@ contract('Decentragram', ([deployer, author, tipper]) => {
   })
 
   describe('images', async () => {
+
+
     let result, imageCount
     const hash = 'QmV8cfu6n4NT5xRr2AHdKxFMTZEJrA44qgrBCr739BN9Wb'
 
@@ -35,10 +41,14 @@ contract('Decentragram', ([deployer, author, tipper]) => {
       imageCount = await decentragram.imageCount()
     })
 
-    //check event
+
     it('creates images', async () => {
       // SUCESS
       assert.equal(imageCount, 1)
+
+      console.log("RESULT::", result, result.logs[0].args);
+  
+      //check event
       const event = result.logs[0].args
       assert.equal(event.id.toNumber(), imageCount.toNumber(), 'id is correct')
       assert.equal(event.hash, hash, 'Hash is correct')
@@ -46,17 +56,17 @@ contract('Decentragram', ([deployer, author, tipper]) => {
       assert.equal(event.tipAmount, '0', 'tip amount is correct')
       assert.equal(event.author, author, 'author is correct')
 
+      //FAILURE
+      await decentragram.uploadImage('', 'Image description', {from: author}).should.be.rejected;
 
-      // FAILURE: Image must have hash
-      await decentragram.uploadImage('', 'Image description', { from: author }).should.be.rejected;
+      await decentragram.uploadImage('abc123', '', {from: author}).should.be.rejected;
 
-      // FAILURE: Image must have description
-      await decentragram.uploadImage('Image hash', '', { from: author }).should.be.rejected;
+
     })
 
     //check from Struct
     it('lists images', async () => {
-      const image = await decentragram.images(imageCount)
+      const image = await decentragram.images(imageCount);
       assert.equal(image.id.toNumber(), imageCount.toNumber(), 'id is correct')
       assert.equal(image.hash, hash, 'Hash is correct')
       assert.equal(image.description, 'Image description', 'description is correct')
